@@ -1,0 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@200&family=Atkinson+Hyperlegible+Next:wght@100;300&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Atkinson Hyperlegible Next', sans-serif;
+  color: #171717;
+  background: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #ffffff;
+  color: #171717;
+  font-weight: 300;
+}

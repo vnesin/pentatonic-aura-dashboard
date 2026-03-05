@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secondhand Intelligence — AURA | Pentatonic</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #171717;
+  --white: #FFFFFF;
+  --mint: #00FBA9;
+  --coral: #FF4C00;
+  --blue: #3941EB;
+  --gray-light: #F5F5F5;
+  --gray-med: #8A8A8A;
+  --gray-border: #E0E0E0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; background: var(--white); color: var(--black); }
+.mono { font-family: ui-monospace, 'SFMono-Regular', monospace; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--gray-med); }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* Header */
+header { background: var(--black); padding: 40px 0 32px; }
+header .container { display: flex; flex-direction: column; gap: 20px; }
+.logo { font-size: 13px; letter-spacing: 6px; color: var(--white); text-transform: uppercase; }
+.brand-title { font-size: 36px; font-weight: 300; color: var(--white); }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab { padding: 8px 20px; border: 1px solid var(--white); background: transparent; color: var(--white);
+  font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+  cursor: pointer; transition: all 0.15s; }
+.tab.active { background: var(--mint); color: var(--black); border-color: var(--mint); }
+.tab:hover:not(.active) { background: rgba(255,255,255,0.1); }
+
+/* Main */
+main { padding: 32px 0 100px; }
+.section { display: none; }
+.section.active { display: block; }
+.card { border: 1px solid var(--black); background: var(--gray-light); padding: 20px; margin-bottom: 16px; }
+
+/* KPIs */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.kpi-value { font-size: 32px; font-weight: 300; margin-top: 8px; }
+
+/* Charts */
+.chart-wrap { position: relative; height: 320px; margin-top: 12px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { padding: 8px 12px; border-bottom: 2px solid var(--black); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--gray-med); font-family: ui-monospace, monospace; font-weight: 400; }
+td { padding: 12px; border-bottom: 1px solid var(--gray-border); }
+
+/* Status dots */
+.status { display: inline-flex; align-items: center; gap: 8px; }
+.dot { width: 12px; height: 12px; border: 1px solid var(--black); display: inline-block; }
+.status-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-family: ui-monospace, monospace; }
+
+/* Progress bar */
+.progress-outer { height: 16px; border: 1px solid var(--black); background: var(--white); margin-top: 8px; }
+.progress-inner { height: 100%; background: var(--mint); transition: width 0.3s; }
+.progress-row { display: flex; justify-content: space-between; align-items: flex-end; }
+
+/* Premium cards */
+.premium-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 12px; }
+.premium-card { border: 1px solid var(--black); background: var(--white); padding: 16px; }
+.premium-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--blue); font-family: ui-monospace, monospace; }
+.premium-name { font-size: 22px; font-weight: 300; margin-top: 8px; }
+.premium-meta { font-size: 13px; color: var(--gray-med); margin-top: 4px; }
+
+/* Insight bar */
+.insight-bar { position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid var(--black);
+  background: var(--gray-light); padding: 16px 0; z-index: 50; }
+.insight-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.insight-text { font-size: 14px; line-height: 1.6; max-width: 900px; }
+.insight-btn { flex-shrink: 0; padding: 10px 20px; background: var(--mint); border: none; color: var(--black);
+  font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; }
+
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .brand-title { font-size: 24px; }
+  .insight-inner { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="logo mono">Pentatonic</div>
+    <div>
+      <p class="label" style="margin-bottom:8px">Secondhand Intelligence Dashboard</p>
+      <h1 class="brand-title">AURA · Los Angeles, CA</h1>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab mono active" data-tab="overview">Overview</button>
+      <button class="tab mono" data-tab="platforms">Platforms</button>
+      <button class="tab mono" data-tab="compliance">Compliance</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="sec-overview">
+      <div class="kpi-grid">
+        <div class="card">
+          <p class="label mono">Units In Secondary Market</p>
+          <p class="kpi-value">4,236</p>
+        </div>
+        <div class="card">
+          <p class="label mono">Resale GMV</p>
+          <p class="kpi-value">$892,400</p>
+        </div>
+        <div class="card">
+          <p class="label mono">Average Price Retention</p>
+          <p class="kpi-value">41%</p>
+        </div>
+        <div class="card">
+          <p class="label mono">Reuse Rate vs SB 707</p>
+          <p class="kpi-value">34% / 50%</p>
+        </div>
+      </div>
+      <div class="card">
+        <p class="label mono">8-Month Trend</p>
+        <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="label mono">Category Price Retention</p>
+        <div class="chart-wrap" style="height:260px"><canvas id="chart-retention"></canvas></div>
+      </div>
+    </div>
+
+    <!-- PLATFORMS -->
+    <div class="section" id="sec-platforms">
+      <div class="card">
+        <p class="label mono">Volume By Platform</p>
+        <div class="chart-wrap"><canvas id="chart-volume"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="label mono">Average Resale Price</p>
+        <div class="chart-wrap"><canvas id="chart-price"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="label mono">Premium Channels</p>
+        <div class="premium-grid">
+          <div class="premium-card">
+            <p class="premium-tag mono">Premium</p>
+            <p class="premium-name">StockX</p>
+            <p class="premium-meta">246 listings · $218 avg</p>
+          </div>
+          <div class="premium-card">
+            <p class="premium-tag mono">Premium</p>
+            <p class="premium-name">The RealReal</p>
+            <p class="premium-meta">190 listings · $264 avg</p>
+          </div>
+          <div class="premium-card">
+            <p class="premium-tag mono">Premium</p>
+            <p class="premium-name">Vestiaire Collective</p>
+            <p class="premium-meta">200 listings · $289 avg</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPLIANCE -->
+    <div class="section" id="sec-compliance">
+      <div class="card">
+        <p class="label mono">SB 707 Checklist</p>
+        <table style="margin-top:12px">
+          <thead><tr><th>Requirement</th><th>Status</th><th>Note</th></tr></thead>
+          <tbody>
+            <tr><td>PRO Registration</td><td><span class="status"><span class="dot" style="background:#00FBA9"></span><span class="status-label">Met</span></span></td><td>State filing accepted</td></tr>
+            <tr><td>Collection Program</td><td><span class="status"><span class="dot" style="background:#3941EB"></span><span class="status-label">In Progress</span></span></td><td>Pilot running in 18 stores</td></tr>
+            <tr><td>Reuse Rate Reporting</td><td><span class="status"><span class="dot" style="background:#3941EB"></span><span class="status-label">In Progress</span></span></td><td>Q1 data validation underway</td></tr>
+            <tr><td>Annual Audit</td><td><span class="status"><span class="dot" style="background:#FF4C00"></span><span class="status-label">Required</span></span></td><td>External auditor not retained</td></tr>
+            <tr><td>Fee Payment</td><td><span class="status"><span class="dot" style="background:#8A8A8A"></span><span class="status-label">Advisory</span></span></td><td>Modelled for FY 2026 planning</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <p class="label mono">Reuse Rate Progress</p>
+        <div class="progress-row" style="margin-top:12px">
+          <p class="kpi-value">34%</p>
+          <p class="label mono">Target 50%</p>
+        </div>
+        <div class="progress-outer"><div class="progress-inner" style="width:68%"></div></div>
+      </div>
+      <div class="card">
+        <p class="label mono">Fee Exposure Model</p>
+        <table style="margin-top:12px">
+          <thead><tr><th>Level</th><th>Est. Fee</th><th>Savings</th></tr></thead>
+          <tbody>
+            <tr><td>Non-Compliance</td><td>$325,000</td><td style="color:var(--black)">$0</td></tr>
+            <tr><td>Partial</td><td>$214,000</td><td style="color:var(--mint)">$111,000</td></tr>
+            <tr><td>Near Full</td><td>$128,000</td><td style="color:var(--mint)">$197,000</td></tr>
+            <tr><td>Full Compliance</td><td>$82,000</td><td style="color:var(--mint)">$243,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="insight-bar">
+  <div class="container insight-inner">
+    <div>
+      <p class="label mono" style="margin-bottom:4px">AI Insight</p>
+      <p class="insight-text" id="insight-text">Poshmark volume increased 23% month over month while overall average resale price held above $210, indicating room to prioritise authenticated premium inventory.</p>
+    </div>
+    <button class="insight-btn">Prioritise Action</button>
+  </div>
+</div>
+
+<script>
+const INSIGHTS = {
+  overview: 'Poshmark volume increased 23% month over month while overall average resale price held above $210, indicating room to prioritise authenticated premium inventory.',
+  platforms: 'Vestiaire Collective and The RealReal deliver the highest resale prices; reallocating top-condition outerwear to these channels can lift blended retention.',
+  compliance: 'Moving reuse rate from 34% to 42% this year would materially reduce modelled fee exposure and improve SB 707 readiness before annual audit review.'
+};
+
+// Tab switching
+const tabs = document.querySelectorAll('.tab');
+const sections = document.querySelectorAll('.section');
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const t = tab.dataset.tab;
+    tabs.forEach(b => b.classList.remove('active'));
+    tab.classList.add('active');
+    sections.forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + t).classList.add('active');
+    document.getElementById('insight-text').textContent = INSIGHTS[t];
+  });
+});
+
+// Chart defaults
+Chart.defaults.font.family = "'Atkinson Hyperlegible', system-ui, sans-serif";
+Chart.defaults.color = '#171717';
+
+const gridOpts = { color: '#E8E8E8' };
+const noGrid = { display: false };
+
+// Trend chart
+new Chart(document.getElementById('chart-trend'), {
+  type: 'line',
+  data: {
+    labels: ['Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26'],
+    datasets: [
+      { label: 'Listings', data: [420,455,488,514,533,561,599,666], borderColor: '#00FBA9', borderWidth: 2, pointRadius: 3, tension: 0.3, yAxisID: 'y' },
+      { label: 'GMV ($)', data: [84800,89600,94400,101300,107500,114800,122400,127600], borderColor: '#3941EB', borderWidth: 2, pointRadius: 3, tension: 0.3, yAxisID: 'y' },
+      { label: 'Avg Price ($)', data: [196,197,198,201,204,207,208,211], borderColor: '#FF4C00', borderWidth: 2, pointRadius: 3, tension: 0.3, yAxisID: 'y1' }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } } },
+    scales: {
+      x: { grid: noGrid },
+      y: { position: 'left', grid: gridOpts, ticks: { callback: v => v >= 1000 ? (v/1000)+'K' : v } },
+      y1: { position: 'right', grid: { display: false }, ticks: { callback: v => '$'+v } }
+    }
+  }
+});
+
+// Category retention
+new Chart(document.getElementById('chart-retention'), {
+  type: 'bar',
+  data: {
+    labels: ['Outerwear','Dresses','Denim','Accessories','Tops'],
+    datasets: [{ data: [52,47,43,39,34], backgroundColor: '#3941EB', borderRadius: 0, barThickness: 28 }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.x + '%' } } },
+    scales: {
+      x: { grid: gridOpts, max: 60, ticks: { callback: v => v+'%' } },
+      y: { grid: noGrid }
+    }
+  }
+});
+
+// Platform volume
+const platformNames = ['Poshmark','eBay','Depop','Mercari','ThredUp','Grailed','StockX','RealReal','Vestiaire'];
+const platformVolumes = [980,720,640,490,420,350,246,190,200];
+const platformPremium = [false,false,false,false,false,false,true,true,true];
+
+new Chart(document.getElementById('chart-volume'), {
+  type: 'bar',
+  data: {
+    labels: platformNames,
+    datasets: [{ data: platformVolumes, backgroundColor: platformPremium.map(p => p ? '#3941EB' : '#00FBA9'), borderRadius: 0, barThickness: 32 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: { x: { grid: noGrid }, y: { grid: gridOpts } }
+  }
+});
+
+// Platform avg price
+const platformPrices = [165,159,151,145,132,204,218,264,289];
+new Chart(document.getElementById('chart-price'), {
+  type: 'bar',
+  data: {
+    labels: platformNames,
+    datasets: [{ data: platformPrices, backgroundColor: platformPremium.map(p => p ? '#3941EB' : '#9EA8FF'), borderRadius: 0, barThickness: 32 }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$'+ctx.parsed.y } } },
+    scales: { x: { grid: noGrid }, y: { grid: gridOpts, ticks: { callback: v => '$'+v } } }
+  }
+});
+</script>
+</body>
+</html>

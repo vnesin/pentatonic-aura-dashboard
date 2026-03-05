@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secondhand Intelligence — AURA | Pentatonic</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --black: #171717;
+  --white: #FFFFFF;
+  --mint: #00FBA9;
+  --coral: #FF4C00;
+  --blue: #3941EB;
+  --gray-light: #F5F5F5;
+  --gray-med: #8A8A8A;
+  --gray-border: #E0E0E0;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Atkinson Hyperlegible', system-ui, sans-serif; background: var(--white); color: var(--black); }
+.mono { font-family: ui-monospace, 'SFMono-Regular', monospace; }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: 3px; color: var(--gray-med); }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+/* Header */
+header { background: var(--black); padding: 40px 0 32px; }
+header .container { display: flex; flex-direction: column; gap: 20px; }
+.header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.logo { font-size: 13px; letter-spacing: 6px; color: var(--white); text-transform: uppercase; }
+.brand-title { font-size: 36px; font-weight: 300; color: var(--white); }
+.tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+.tab { padding: 8px 20px; border: 1px solid var(--white); background: transparent; color: var(--white);
+  font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+  cursor: pointer; transition: all 0.15s; }
+.tab.active { background: var(--mint); color: var(--black); border-color: var(--mint); }
+.tab:hover:not(.active) { background: rgba(255,255,255,0.1); }
+
+/* Dropdowns */
+.controls { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+.control-group { display: flex; flex-direction: column; gap: 4px; }
+.control-label { font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--gray-med); font-family: ui-monospace, monospace; }
+select { padding: 8px 32px 8px 12px; border: 1px solid var(--white); background: transparent; color: var(--white);
+  font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 10px center; min-width: 200px; }
+select option { background: var(--black); color: var(--white); }
+
+/* Report button */
+.btn-report { padding: 10px 24px; background: var(--mint); border: none; color: var(--black);
+  font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+  cursor: pointer; border-radius: 9999px; transition: opacity 0.15s; }
+.btn-report:hover { opacity: 0.85; }
+
+/* Main */
+main { padding: 32px 0 100px; }
+.section { display: none; }
+.section.active { display: block; }
+.card { border: 1px solid var(--black); background: var(--gray-light); padding: 20px; margin-bottom: 16px; }
+
+/* KPIs */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.kpi-value { font-size: 32px; font-weight: 300; margin-top: 8px; }
+
+/* Charts */
+.chart-wrap { position: relative; height: 320px; margin-top: 12px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; text-align: left; }
+th { padding: 8px 12px; border-bottom: 2px solid var(--black); font-size: 11px; text-transform: uppercase;
+  letter-spacing: 2px; color: var(--gray-med); font-family: ui-monospace, monospace; font-weight: 400; }
+td { padding: 12px; border-bottom: 1px solid var(--gray-border); }
+
+/* Legend */
+.legend { display: flex; gap: 24px; flex-wrap: wrap; padding: 16px; background: var(--white); border: 1px solid var(--gray-border); margin-bottom: 16px; }
+.legend-item { display: flex; align-items: center; gap: 8px; }
+.legend-dot { width: 12px; height: 12px; border: 1px solid var(--black); }
+.legend-text { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-family: ui-monospace, monospace; color: var(--gray-med); }
+
+/* Status dots */
+.status { display: inline-flex; align-items: center; gap: 8px; }
+.dot { width: 12px; height: 12px; border: 1px solid var(--black); display: inline-block; }
+.status-label { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; font-family: ui-monospace, monospace; }
+
+/* Progress bar */
+.progress-outer { height: 16px; border: 1px solid var(--black); background: var(--white); margin-top: 8px; }
+.progress-inner { height: 100%; background: var(--mint); transition: width 0.3s; }
+.progress-row { display: flex; justify-content: space-between; align-items: flex-end; }
+
+/* Premium cards */
+.premium-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 12px; }
+.premium-card { border: 1px solid var(--black); background: var(--white); padding: 16px; }
+.premium-tag { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: var(--blue); font-family: ui-monospace, monospace; }
+.premium-name { font-size: 22px; font-weight: 300; margin-top: 8px; }
+.premium-meta { font-size: 13px; color: var(--gray-med); margin-top: 4px; }
+
+/* Insight bar */
+.insight-bar { position: fixed; bottom: 0; left: 0; right: 0; border-top: 1px solid var(--black);
+  background: var(--gray-light); padding: 16px 0; z-index: 50; }
+.insight-inner { display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+.insight-text { font-size: 14px; line-height: 1.6; max-width: 900px; }
+.insight-btn { flex-shrink: 0; padding: 10px 20px; background: var(--mint); border: none; color: var(--black);
+  font-family: ui-monospace, monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; border-radius: 9999px; }
+
+@media (max-width: 768px) {
+  .kpi-grid { grid-template-columns: 1fr 1fr; }
+  .brand-title { font-size: 24px; }
+  .insight-inner { flex-direction: column; align-items: flex-start; }
+  .header-top { flex-direction: column; gap: 16px; }
+}
+
+@media print {
+  .insight-bar, .tabs, .controls, .btn-report { display: none !important; }
+  .section { display: block !important; page-break-inside: avoid; margin-bottom: 32px; }
+  header { background: var(--white) !important; border-bottom: 2px solid var(--black); }
+  header * { color: var(--black) !important; }
+  body { padding: 20px; }
+  .card { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-top">
+      <div>
+        <div class="logo mono">Pentatonic</div>
+        <p class="label" style="margin: 16px 0 8px; color: var(--gray-med);">Secondhand Intelligence Dashboard</p>
+        <h1 class="brand-title" id="brand-region">AURA · California</h1>
+      </div>
+      <button class="btn-report" onclick="window.print()">Generate Report</button>
+    </div>
+    <div class="controls">
+      <div class="control-group">
+        <span class="control-label">Legislation</span>
+        <select id="legislation-select">
+          <option value="sb707">California Textile EPR (SB 707)</option>
+          <option value="eu-epr">EU Textile EPR (Revised Waste Framework)</option>
+          <option value="csrd">CSRD (Corporate Sustainability Reporting)</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <span class="control-label">Region</span>
+        <select id="region-select">
+          <option value="california" data-pop="39.5">California</option>
+          <option value="new-york" data-pop="19.5">New York</option>
+          <option value="texas" data-pop="30.5">Texas</option>
+          <option value="florida" data-pop="22.6">Florida</option>
+          <option value="illinois" data-pop="12.6">Illinois</option>
+        </select>
+      </div>
+    </div>
+    <div class="tabs" id="tabs">
+      <button class="tab mono active" data-tab="overview">Overview</button>
+      <button class="tab mono" data-tab="platforms">Platforms</button>
+      <button class="tab mono" data-tab="compliance">Compliance</button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <!-- OVERVIEW -->
+    <div class="section active" id="sec-overview">
+      <div class="kpi-grid">
+        <div class="card">
+          <p class="label mono">Units In Secondary Market</p>
+          <p class="kpi-value" id="kpi-units">4,236</p>
+        </div>
+        <div class="card">
+          <p class="label mono">Resale GMV</p>
+          <p class="kpi-value" id="kpi-gmv">$892,400</p>
+        </div>
+        <div class="card">
+          <p class="label mono">Average Price Retention</p>
+          <p class="kpi-value">41%</p>
+        </div>
+        <div class="card">
+          <p class="label mono" id="kpi-target-label">Reuse Rate vs SB 707</p>
+          <p class="kpi-value" id="kpi-reuse">34% / 50%</p>
+        </div>
+      </div>
+      <div class="card">
+        <p class="label mono">8-Month Trend</p>
+        <div class="chart-wrap"><canvas id="chart-trend"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="label mono">Category Price Retention</p>
+        <div class="chart-wrap" style="height:260px"><canvas id="chart-retention"></canvas></div>
+      </div>
+    </div>
+
+    <!-- PLATFORMS -->
+    <div class="section" id="sec-platforms">
+      <div class="card">
+        <p class="label mono">Volume By Platform</p>
+        <div class="chart-wrap"><canvas id="chart-volume"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="label mono">Average Resale Price</p>
+        <div class="chart-wrap"><canvas id="chart-price"></canvas></div>
+      </div>
+      <div class="card">
+        <p class="label mono">Premium Channels</p>
+        <div class="premium-grid">
+          <div class="premium-card">
+            <p class="premium-tag mono">Premium</p>
+            <p class="premium-name">StockX</p>
+            <p class="premium-meta" id="premium-stockx">246 listings · $218 avg</p>
+          </div>
+          <div class="premium-card">
+            <p class="premium-tag mono">Premium</p>
+            <p class="premium-name">The RealReal</p>
+            <p class="premium-meta" id="premium-realreal">190 listings · $264 avg</p>
+          </div>
+          <div class="premium-card">
+            <p class="premium-tag mono">Premium</p>
+            <p class="premium-name">Vestiaire Collective</p>
+            <p class="premium-meta" id="premium-vestiaire">200 listings · $289 avg</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPLIANCE -->
+    <div class="section" id="sec-compliance">
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:#00FBA9"></span><span class="legend-text">On Track</span></div>
+        <div class="legend-item"><span class="legend-dot" style="background:#3941EB"></span><span class="legend-text">In Progress</span></div>
+        <div class="legend-item"><span class="legend-dot" style="background:#FF4C00"></span><span class="legend-text">Action Required</span></div>
+        <div class="legend-item"><span class="legend-dot" style="background:#8A8A8A"></span><span class="legend-text">Advisory</span></div>
+      </div>
+      <div class="card">
+        <p class="label mono" id="compliance-title">SB 707 Checklist</p>
+        <table style="margin-top:12px">
+          <thead><tr><th>Requirement</th><th>Status</th><th>Note</th></tr></thead>
+          <tbody id="compliance-tbody">
+            <tr><td>PRO Registration</td><td><span class="status"><span class="dot" style="background:#00FBA9"></span><span class="status-label">On Track</span></span></td><td>State filing accepted</td></tr>
+            <tr><td>Collection Program</td><td><span class="status"><span class="dot" style="background:#3941EB"></span><span class="status-label">In Progress</span></span></td><td>Pilot running in 18 stores</td></tr>
+            <tr><td>Reuse Rate Reporting</td><td><span class="status"><span class="dot" style="background:#3941EB"></span><span class="status-label">In Progress</span></span></td><td>Q1 data validation underway</td></tr>
+            <tr><td>Annual Audit</td><td><span class="status"><span class="dot" style="background:#FF4C00"></span><span class="status-label">Action Required</span></span></td><td>External auditor not retained</td></tr>
+            <tr><td>Fee Payment</td><td><span class="status"><span class="dot" style="background:#8A8A8A"></span><span class="status-label">Advisory</span></span></td><td>Modelled for FY 2026 planning</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <p class="label mono" id="reuse-label">Reuse Rate Progress</p>
+        <div class="progress-row" style="margin-top:12px">
+          <p class="kpi-value" id="reuse-current">34%</p>
+          <p class="label mono" id="reuse-target">Target 50%</p>
+        </div>
+        <div class="progress-outer"><div class="progress-inner" id="progress-bar" style="width:68%"></div></div>
+      </div>
+      <div class="card">
+        <p class="label mono">Current Exposure Model</p>
+        <table style="margin-top:12px">
+          <thead><tr><th>Compliance Level</th><th>Est. Fee</th><th>Savings vs Non-Compliance</th></tr></thead>
+          <tbody id="fee-tbody">
+            <tr><td>Non-Compliance</td><td id="fee-none">$325,000</td><td style="color:var(--black)">$0</td></tr>
+            <tr><td>Partial</td><td id="fee-partial">$214,000</td><td style="color:var(--mint)" id="save-partial">$111,000</td></tr>
+            <tr><td>Near Full</td><td id="fee-near">$128,000</td><td style="color:var(--mint)" id="save-near">$197,000</td></tr>
+            <tr><td>Full Compliance</td><td id="fee-full">$82,000</td><td style="color:var(--mint)" id="save-full">$243,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="insight-bar">
+  <div class="container insight-inner">
+    <div>
+      <p class="label mono" style="margin-bottom:4px">AI Insight</p>
+      <p class="insight-text" id="insight-text">Poshmark volume increased 23% month over month while overall average resale price held above $210, indicating room to prioritise authenticated premium inventory.</p>
+    </div>
+    <button class="insight-btn">Prioritise Action</button>
+  </div>
+</div>
+
+<script>
+// Base California data (39.5M population)
+const BASE_DATA = {
+  units: 4236,
+  gmv: 892400,
+  fees: { none: 325000, partial: 214000, near: 128000, full: 82000 },
+  premiumListings: { stockx: 246, realreal: 190, vestiaire: 200 },
+  trendListings: [420,455,488,514,533,561,599,666],
+  trendGMV: [84800,89600,94400,101300,107500,114800,122400,127600],
+  platformVolumes: [980,720,640,490,420,350,246,190,200]
+};
+
+// Population multipliers (relative to California 39.5M)
+const POPULATIONS = {
+  'california': 1.0,
+  'new-york': 0.494,
+  'texas': 0.772,
+  'florida': 0.572,
+  'illinois': 0.319,
+  'eu': 11.39
+};
+
+// Region display names
+const REGION_NAMES = {
+  'california': 'California',
+  'new-york': 'New York',
+  'texas': 'Texas',
+  'florida': 'Florida',
+  'illinois': 'Illinois',
+  'eu': 'European Union'
+};
+
+// Compliance checklists by legislation
+const COMPLIANCE_DATA = {
+  'sb707': {
+    title: 'SB 707 Checklist',
+    target: 50,
+    targetLabel: 'Reuse Rate vs SB 707',
+    items: [
+      { req: 'PRO Registration', status: 'on-track', note: 'State filing accepted' },
+      { req: 'Collection Program', status: 'in-progress', note: 'Pilot running in 18 stores' },
+      { req: 'Reuse Rate Reporting', status: 'in-progress', note: 'Q1 data validation underway' },
+      { req: 'Annual Audit', status: 'action', note: 'External auditor not retained' },
+      { req: 'Fee Payment', status: 'advisory', note: 'Modelled for FY 2026 planning' }
+    ]
+  },
+  'eu-epr': {
+    title: 'EU Textile EPR Checklist',
+    target: 55,
+    targetLabel: 'Reuse Rate vs EU EPR',
+    items: [
+      { req: 'PRO Registration', status: 'on-track', note: 'Registered with national PRO' },
+      { req: 'Collection Infrastructure', status: 'in-progress', note: 'Partnership with 3 collectors' },
+      { req: 'Recycled Content Targets', status: 'in-progress', note: '12% achieved, 25% target' },
+      { req: 'Eco-Modulation Fees', status: 'action', note: 'Design assessment pending' },
+      { req: 'Annual Reporting', status: 'advisory', note: 'Template under review' }
+    ]
+  },
+  'csrd': {
+    title: 'CSRD Compliance Checklist',
+    target: 100,
+    targetLabel: 'CSRD Readiness',
+    items: [
+      { req: 'Double Materiality Assessment', status: 'in-progress', note: 'Gap analysis complete' },
+      { req: 'Sustainability Statement', status: 'action', note: 'ESRS mapping in progress' },
+      { req: 'Third-Party Assurance', status: 'action', note: 'Auditor selection underway' },
+      { req: 'Digital Tagging (DPP)', status: 'advisory', note: 'Pilot planned Q3 2026' },
+      { req: 'Board-Level Oversight', status: 'on-track', note: 'Sustainability committee active' }
+    ]
+  }
+};
+
+const STATUS_STYLES = {
+  'on-track': { bg: '#00FBA9', label: 'On Track' },
+  'in-progress': { bg: '#3941EB', label: 'In Progress' },
+  'action': { bg: '#FF4C00', label: 'Action Required' },
+  'advisory': { bg: '#8A8A8A', label: 'Advisory' }
+};
+
+const INSIGHTS = {
+  overview: 'Poshmark volume increased 23% month over month while overall average resale price held above $210, indicating room to prioritise authenticated premium inventory.',
+  platforms: 'Vestiaire Collective and The RealReal deliver the highest resale prices; reallocating top-condition outerwear to these channels can lift blended retention.',
+  compliance: 'Moving reuse rate from 34% to target would materially reduce modelled fee exposure and improve regulatory readiness before annual audit review.'
+};
+
+// Format currency
+function formatCurrency(n) {
+  if (n >= 1000000) return '$' + (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return '$' + Math.round(n).toLocaleString();
+  return '$' + n;
+}
+
+function formatNumber(n) {
+  return Math.round(n).toLocaleString();
+}
+
+// Update dashboard based on selections
+function updateDashboard() {
+  const legislation = document.getElementById('legislation-select').value;
+  const region = document.getElementById('region-select').value;
+  const mult = POPULATIONS[region] || 1.0;
+  
+  // Update header
+  document.getElementById('brand-region').textContent = 'AURA · ' + REGION_NAMES[region];
+  
+  // Scale KPIs
+  const units = Math.round(BASE_DATA.units * mult);
+  const gmv = Math.round(BASE_DATA.gmv * mult);
+  document.getElementById('kpi-units').textContent = formatNumber(units);
+  document.getElementById('kpi-gmv').textContent = formatCurrency(gmv);
+  
+  // Update compliance
+  const comp = COMPLIANCE_DATA[legislation];
+  document.getElementById('kpi-target-label').textContent = comp.targetLabel;
+  document.getElementById('kpi-reuse').textContent = '34% / ' + comp.target + '%';
+  document.getElementById('compliance-title').textContent = comp.title;
+  document.getElementById('reuse-target').textContent = 'Target ' + comp.target + '%';
+  document.getElementById('progress-bar').style.width = (34 / comp.target * 100) + '%';
+  
+  // Update compliance table
+  const tbody = document.getElementById('compliance-tbody');
+  tbody.innerHTML = comp.items.map(item => {
+    const s = STATUS_STYLES[item.status];
+    return `<tr><td>${item.req}</td><td><span class="status"><span class="dot" style="background:${s.bg}"></span><span class="status-label">${s.label}</span></span></td><td>${item.note}</td></tr>`;
+  }).join('');
+  
+  // Scale fee exposure
+  const feeNone = Math.round(BASE_DATA.fees.none * mult);
+  const feePartial = Math.round(BASE_DATA.fees.partial * mult);
+  const feeNear = Math.round(BASE_DATA.fees.near * mult);
+  const feeFull = Math.round(BASE_DATA.fees.full * mult);
+  document.getElementById('fee-none').textContent = formatCurrency(feeNone);
+  document.getElementById('fee-partial').textContent = formatCurrency(feePartial);
+  document.getElementById('fee-near').textContent = formatCurrency(feeNear);
+  document.getElementById('fee-full').textContent = formatCurrency(feeFull);
+  document.getElementById('save-partial').textContent = formatCurrency(feeNone - feePartial);
+  document.getElementById('save-near').textContent = formatCurrency(feeNone - feeNear);
+  document.getElementById('save-full').textContent = formatCurrency(feeNone - feeFull);
+  
+  // Scale premium listings
+  document.getElementById('premium-stockx').textContent = formatNumber(BASE_DATA.premiumListings.stockx * mult) + ' listings · $218 avg';
+  document.getElementById('premium-realreal').textContent = formatNumber(BASE_DATA.premiumListings.realreal * mult) + ' listings · $264 avg';
+  document.getElementById('premium-vestiaire').textContent = formatNumber(BASE_DATA.premiumListings.vestiaire * mult) + ' listings · $289 avg';
+  
+  // Update charts
+  updateCharts(mult);
+}
+
+// Update region options based on legislation
+function updateRegionOptions() {
+  const legislation = document.getElementById('legislation-select').value;
+  const regionSelect = document.getElementById('region-select');
+  
+  if (legislation === 'sb707') {
+    regionSelect.innerHTML = `
+      <option value="california">California</option>
+      <option value="new-york">New York</option>
+      <option value="texas">Texas</option>
+      <option value="florida">Florida</option>
+      <option value="illinois">Illinois</option>
+    `;
+  } else {
+    regionSelect.innerHTML = `<option value="eu">European Union</option>`;
+  }
+  updateDashboard();
+}
+
+// Tab switching
+const tabs = document.querySelectorAll('.tab');
+const sections = document.querySelectorAll('.section');
+tabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const t = tab.dataset.tab;
+    tabs.forEach(b => b.classList.remove('active'));
+    tab.classList.add('active');
+    sections.forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + t).classList.add('active');
+    document.getElementById('insight-text').textContent = INSIGHTS[t];
+  });
+});
+
+// Event listeners
+document.getElementById('legislation-select').addEventListener('change', updateRegionOptions);
+document.getElementById('region-select').addEventListener('change', updateDashboard);
+
+// Chart defaults
+Chart.defaults.font.family = "'Atkinson Hyperlegible', system-ui, sans-serif";
+Chart.defaults.color = '#171717';
+
+const gridOpts = { color: '#E8E8E8' };
+const noGrid = { display: false };
+
+// Chart instances
+let trendChart, retentionChart, volumeChart, priceChart;
+
+function updateCharts(mult) {
+  const scaledListings = BASE_DATA.trendListings.map(v => Math.round(v * mult));
+  const scaledGMV = BASE_DATA.trendGMV.map(v => Math.round(v * mult));
+  const scaledVolumes = BASE_DATA.platformVolumes.map(v => Math.round(v * mult));
+  
+  if (trendChart) {
+    trendChart.data.datasets[0].data = scaledListings;
+    trendChart.data.datasets[1].data = scaledGMV;
+    trendChart.update();
+  }
+  if (volumeChart) {
+    volumeChart.data.datasets[0].data = scaledVolumes;
+    volumeChart.update();
+  }
+}
+
+// Initialize charts
+function initCharts() {
+  // Trend chart
+  trendChart = new Chart(document.getElementById('chart-trend'), {
+    type: 'line',
+    data: {
+      labels: ['Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26'],
+      datasets: [
+        { label: 'Listings', data: BASE_DATA.trendListings, borderColor: '#00FBA9', borderWidth: 2, pointRadius: 3, tension: 0.3, yAxisID: 'y' },
+        { label: 'GMV ($)', data: BASE_DATA.trendGMV, borderColor: '#3941EB', borderWidth: 2, pointRadius: 3, tension: 0.3, yAxisID: 'y' },
+        { label: 'Avg Price ($)', data: [196,197,198,201,204,207,208,211], borderColor: '#FF4C00', borderWidth: 2, pointRadius: 3, tension: 0.3, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { position: 'top', labels: { usePointStyle: true, padding: 16 } } },
+      scales: {
+        x: { grid: noGrid },
+        y: { position: 'left', grid: gridOpts, ticks: { callback: v => v >= 1000 ? (v/1000)+'K' : v } },
+        y1: { position: 'right', grid: { display: false }, ticks: { callback: v => '$'+v } }
+      }
+    }
+  });
+
+  // Category retention
+  retentionChart = new Chart(document.getElementById('chart-retention'), {
+    type: 'bar',
+    data: {
+      labels: ['Outerwear','Dresses','Denim','Accessories','Tops'],
+      datasets: [{ data: [52,47,43,39,34], backgroundColor: '#3941EB', borderRadius: 0, barThickness: 28 }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ctx.parsed.x + '%' } } },
+      scales: {
+        x: { grid: gridOpts, max: 60, ticks: { callback: v => v+'%' } },
+        y: { grid: noGrid }
+      }
+    }
+  });
+
+  // Platform volume
+  const platformNames = ['Poshmark','eBay','Depop','Mercari','ThredUp','Grailed','StockX','RealReal','Vestiaire'];
+  const platformPremium = [false,false,false,false,false,false,true,true,true];
+
+  volumeChart = new Chart(document.getElementById('chart-volume'), {
+    type: 'bar',
+    data: {
+      labels: platformNames,
+      datasets: [{ data: BASE_DATA.platformVolumes, backgroundColor: platformPremium.map(p => p ? '#3941EB' : '#00FBA9'), borderRadius: 0, barThickness: 32 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: { x: { grid: noGrid }, y: { grid: gridOpts } }
+    }
+  });
+
+  // Platform avg price
+  const platformPrices = [165,159,151,145,132,204,218,264,289];
+  priceChart = new Chart(document.getElementById('chart-price'), {
+    type: 'bar',
+    data: {
+      labels: platformNames,
+      datasets: [{ data: platformPrices, backgroundColor: platformPremium.map(p => p ? '#3941EB' : '#9EA8FF'), borderRadius: 0, barThickness: 32 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => '$'+ctx.parsed.y } } },
+      scales: { x: { grid: noGrid }, y: { grid: gridOpts, ticks: { callback: v => '$'+v } } }
+    }
+  });
+}
+
+// Initialize
+initCharts();
+updateDashboard();
+</script>
+</body>
+</html>

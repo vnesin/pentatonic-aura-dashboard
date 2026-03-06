@@ -529,29 +529,33 @@ export default function App() {
             <div className="flex flex-wrap gap-6">
               <div className="flex flex-col gap-1">
                 <Label>Legislation</Label>
-                <Select value={legislation} onValueChange={(v) => handleLegislationChange(v as Legislation)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent theme={isDark ? "dark" : "light"}>
-                    <SelectItem value="sb707">California Textile EPR (SB 707)</SelectItem>
-                    <SelectItem value="eu-epr">EU Textile EPR (Revised Waste Framework)</SelectItem>
-                    <SelectItem value="csrd">CSRD (Corporate Sustainability Reporting)</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="w-80">
+                  <Select value={legislation} onValueChange={(v) => handleLegislationChange(v as Legislation)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent theme={isDark ? "dark" : "light"}>
+                      <SelectItem value="sb707">California Textile EPR (SB 707)</SelectItem>
+                      <SelectItem value="eu-epr">EU Textile EPR (Revised Waste Framework)</SelectItem>
+                      <SelectItem value="csrd">CSRD (Corporate Sustainability Reporting)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex flex-col gap-1">
                 <Label>Region</Label>
-                <Select value={region} onValueChange={(v) => setRegion(v as Region)} disabled={regionLocked}>
-                  <SelectTrigger aria-label={regionLocked ? 'Region fixed by legislation' : 'Select region'}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent theme={isDark ? "dark" : "light"}>
-                    {regionOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="w-56">
+                  <Select value={region} onValueChange={(v) => setRegion(v as Region)} disabled={regionLocked}>
+                    <SelectTrigger aria-label={regionLocked ? 'Region fixed by legislation' : 'Select region'}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent theme={isDark ? "dark" : "light"}>
+                      {regionOptions.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
             <TabsList>
